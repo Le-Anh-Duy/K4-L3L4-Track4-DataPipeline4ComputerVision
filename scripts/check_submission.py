@@ -27,7 +27,16 @@ def check(level, name, detail=""):
 
 
 def sh(*cmd):
+    if sys.platform == "win32" and cmd and str(cmd[0]).endswith(".sh"):
+        ps_script = (ROOT / cmd[0]).with_suffix(".ps1")
+        if ps_script.exists():
+            cmd = ("powershell", "-ExecutionPolicy", "Bypass", "-File", str(ps_script), *cmd[1:])
+        else:
+            import shutil
+            if shutil.which("bash"):
+                cmd = ("bash", *cmd)
     return subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
+
 
 
 def sha(p: Path) -> str:
